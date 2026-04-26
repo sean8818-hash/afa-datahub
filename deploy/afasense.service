@@ -1,0 +1,11 @@
+[Unit]
+Description=AfaSense Backend
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/afa-datahub/backend
+ExecStart=/usr/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
