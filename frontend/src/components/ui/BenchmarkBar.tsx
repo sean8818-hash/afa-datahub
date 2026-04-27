@@ -1,12 +1,11 @@
 import type { BenchmarkLevel } from '../../types';
-import './BenchmarkBar.css';
 
 const LEVELS: BenchmarkLevel[] = ['weak', 'fair', 'average', 'good', 'excellent'];
 
 const LABELS: Record<BenchmarkLevel, string> = {
   weak:      'Developing',
-  fair:      'Good',
-  average:   'Average',
+  fair:      'Average',
+  average:   'Good',
   good:      'Excellent',
   excellent: 'Elite',
 };
@@ -19,64 +18,96 @@ const SEG_COLORS: Record<BenchmarkLevel, string> = {
   excellent: '#ef4444',
 };
 
-// 上方标注文字的垂直位置，错开避免重叠
-const LABEL_ROW: Record<BenchmarkLevel, number> = {
-  weak:      0,
-  fair:      1,
-  average:   0,
-  good:      1,
-  excellent: 0,
-};
+function scoreToLevel(score: number): BenchmarkLevel {
+  if (score <= 20) return 'weak';
+  if (score <= 40) return 'fair';
+  if (score <= 60) return 'average';
+  if (score <= 80) return 'good';
+  return 'excellent';
+}
+
+function scoreToPosition(score: number): number {
+  return Math.min(100, Math.max(0, score));
+}
 
 interface Props {
   level: BenchmarkLevel;
-  showLabel?: boolean;
+  score?: number;
   size?: 'sm' | 'md';
 }
 
-export function BenchmarkBar({ level, showLabel = true, size = 'md' }: Props) {
+export function BenchmarkBar({ level, score, size = 'md' }: Props) {
   const activeIndex = LEVELS.indexOf(level);
+  const segHeight = size === 'sm' ? '4px' : '6px';
+
+  const indicatorLevel = score != null ? scoreToLevel(score) : level;
+  const indicatorPos = score != null ? scoreToPosition(score) : null;
+  const indicatorColor = SEG_COLORS[indicatorLevel];
 
   return (
-    <div className={`benchmark benchmark--${size}`} role="img" aria-label={`Benchmark: ${LABELS[level]}`}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
 
-      {/* 上方错开标注 */}
-      {showLabel && size === 'md' && (
-        <div className="benchmark-labels-top">
-          {LEVELS.map((l, i) => (
-            <div key={l} className="benchmark-label-col">
-              <span
-                className={`benchmark-label-top ${i <= activeIndex ? 'benchmark-label-top--active' : ''}`}
-                style={{
-                  color: i <= activeIndex ? SEG_COLORS[l] : 'transparent',
-                  marginTop: LABEL_ROW[l] === 1 ? '14px' : '0px',
-                  borderBottom: l === level ? `1px solid ${SEG_COLORS[l]}` : 'none',
-                }}
-              >
-                {LABELS[l]}
-              </span>
-            </div>
-          ))}
+      {/* 上方当前等级标注 */}
+      {size === 'md' && indicatorPos != null && (
+        <div style={{ position: 'relative', height: '14px' }}>
+          <span style={{
+            position: 'absolute',
+            left: `${indicatorPos}%`,
+            transform: indicatorPos > 85 ? 'translateX(-100%)' : indicatorPos < 15 ? 'translateX(0%)' : 'translateX(-50%)',
+            fontSize: '9px',
+            fontWeight: 600,
+            color: indicatorColor,
+            whiteSpace: 'nowrap',
+          }}>
+            {LABELS[indicatorLevel]}
+          </span>
         </div>
       )}
 
-      {/* 分段色条 */}
-      <div className="benchmark-segs">
-        {LEVELS.map((l, i) => (
-          <div
-            key={l}
-            className={`benchmark-seg ${i <= activeIndex ? 'benchmark-seg--active' : ''}`}
-            style={{ background: i <= activeIndex ? SEG_COLORS[l] : 'rgba(255,255,255,0.08)' }}
-          />
-        ))}
+      {/* 色条 + 指示点 */}
+      <div style={{ position: 'relative', width: '100%', height: segHeight }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '3px', width: '100%', height: segHeight }}>
+          {LEVELS.map((l, i) => (
+            <div key={l} style={{
+              flex: 1,
+              height: segHeight,
+              borderRadius: '3px',
+              background: i <= activeIndex ? SEG_COLORS[l] : 'rgba(255,255,255,0.12)',
+            }} />
+          ))}
+        </div>
+
+        {indicatorPos != null && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: `${indicatorPos}%`,
+            transform: 'translate(-50%, -50%)',
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            background: indicatorColor,
+            border: '2px solid #fff',
+            boxShadow: `0 0 6px ${indicatorColor}`,
+            zIndex: 1,
+          }} />
+        )}
       </div>
 
-      {/* 底部端点 */}
+      {/* 底部5个标签 */}
       {size === 'md' && (
-        <div className="benchmark-endpoints">
-          <span style={{ color: '#22c55e' }}>Developing</span>
-          <span style={{ color: '#14b8a6' }}>Good</span>
-          <span style={{ color: '#ef4444' }}>Elite</span>
+        <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+          {LEVELS.map((l, i) => (
+            <span key={l} style={{
+              flex: 1,
+              fontSize: '8px',
+              textAlign: 'center',
+              color: i <= activeIndex ? SEG_COLORS[l] : 'rgba(255,255,255,0.25)',
+              fontWeight: l === level ? 600 : 400,
+            }}>
+              {LABELS[l]}
+            </span>
+          ))}
         </div>
       )}
     </div>

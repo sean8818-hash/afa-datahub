@@ -25,7 +25,12 @@ function ReadinessRing({ score }: { score: number }) {
   const r = 18, cx = 22, cy = 22;
   const circ = 2 * Math.PI * r;
   const progress = (score / 100) * circ;
-  const color = score >= 80 ? '#22c55e' : score >= 60 ? '#eab308' : score >= 40 ? '#f97316' : '#ef4444';
+  const color = score >= 81 ? '#ef4444'
+    : score >= 61 ? '#f97316'
+    : score >= 41 ? '#eab308'
+    : score >= 21 ? '#14b8a6'
+    : '#22c55e';
+
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" aria-label={`Readiness ${score}`}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3"/>
@@ -56,7 +61,11 @@ function AthleteCard({ athlete, onClick }: { athlete: Athlete; onClick: () => vo
         <div className="card-benchmark-wrap">
           <span className="card-label">BENCHMARK</span>
           {athlete.benchmark_level && (
-            <BenchmarkBar level={athlete.benchmark_level} size="md" showLabel={true} />
+            <BenchmarkBar
+              level={athlete.benchmark_level}
+              score={athlete.readiness_score}
+              size="md"
+            />
           )}
         </div>
         <div className="card-meta">
@@ -103,6 +112,7 @@ export default function Dashboard() {
           )}
         </div>
       )}
+
       <div className="dashboard-header">
         <h1 className="dashboard-title">
           {activeTeam.name}
@@ -122,6 +132,7 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
       <div className="athlete-grid">
         {filtered.map(athlete => (
           <AthleteCard key={athlete.id} athlete={athlete}
