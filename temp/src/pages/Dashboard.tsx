@@ -26,41 +26,57 @@ function ReadinessRing({ score }: { score: number }) {
   const circ = 2 * Math.PI * r;
   const progress = (score / 100) * circ;
   const color = score >= 80 ? '#22c55e' : score >= 60 ? '#eab308' : score >= 40 ? '#f97316' : '#ef4444';
+
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" aria-label={`Readiness ${score}`}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3"/>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="3"
-        strokeDasharray={`${progress} ${circ}`} strokeLinecap="round"
-        transform={`rotate(-90 ${cx} ${cy})`}/>
-      <text x={cx} y={cy+1} textAnchor="middle" dominantBaseline="central"
-        fill={color} fontSize="10" fontWeight="600" fontFamily="DM Mono, monospace">{score}</text>
+      <circle
+        cx={cx} cy={cy} r={r} fill="none"
+        stroke={color} strokeWidth="3"
+        strokeDasharray={`${progress} ${circ}`}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+        style={{ transition: 'stroke-dasharray 0.6s ease' }}
+      />
+      <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central"
+        fill={color} fontSize="10" fontWeight="600" fontFamily="DM Mono, monospace">
+        {score}
+      </text>
     </svg>
   );
 }
 
 function AthleteCard({ athlete, onClick }: { athlete: Athlete; onClick: () => void }) {
   return (
-    <button className="athlete-card" onClick={onClick}>
-      {athlete.needs_attention && <span className="card-alert-dot" />}
+    <button className="athlete-card" onClick={onClick} aria-label={`View ${athlete.name}'s profile`}>
+      {athlete.needs_attention && (
+        <span className="card-alert-dot" aria-label="Needs attention" />
+      )}
+
       <div className="card-header">
-        <div className="card-avatar">{getInitials(athlete.name)}</div>
+        <div className="card-avatar">
+          {getInitials(athlete.name)}
+        </div>
         <div className="card-identity">
           <span className="card-name">{athlete.name}</span>
           <span className="card-position">{athlete.position}</span>
         </div>
         <div className="card-readiness">
-          {athlete.readiness_score != null && <ReadinessRing score={athlete.readiness_score} />}
-        </div>
-      </div>
-      <div className="card-body">
-        <div className="card-benchmark-wrap">
-          <span className="card-label">BENCHMARK</span>
-          {athlete.benchmark_level && (
-            <BenchmarkBar level={athlete.benchmark_level} size="md" showLabel={true} />
+          {athlete.readiness_score != null && (
+            <ReadinessRing score={athlete.readiness_score} />
           )}
         </div>
+      </div>
+
+      <div className="card-body">
+        {athlete.benchmark_level && (
+          <div className="card-benchmark">
+            <span className="card-label">Benchmark</span>
+            <BenchmarkBar level={athlete.benchmark_level} size="sm" />
+          </div>
+        )}
         <div className="card-meta">
-          <span className="card-label">LAST TEST</span>
+          <span className="card-label">Last test</span>
           <span className="card-value">{daysSince(athlete.last_test_date)}</span>
         </div>
       </div>
@@ -76,56 +92,80 @@ export default function Dashboard() {
 
   const athletes = MOCK_ATHLETES.filter(a => a.team_id === activeTeam.id);
   const attentionAthletes = athletes.filter(a => a.needs_attention);
+
   const filtered = filter === 'all' ? athletes
     : filter === 'attention' ? athletes.filter(a => a.needs_attention)
     : athletes.filter(a => !a.needs_attention);
 
   return (
     <div className="dashboard">
+      {/* Alert bar */}
       {attentionAthletes.length > 0 && (
         <div className="alert-bar">
-          <button className="alert-toggle" onClick={() => setAlertOpen(o => !o)}>
-            <span className="alert-dot" />
+          <button
+            className="alert-toggle"
+            onClick={() => setAlertOpen(o => !o)}
+            aria-expanded={alertOpen}
+          >
+            <span className="alert-dot" aria-hidden="true" />
             <span className="alert-text">
               {attentionAthletes.length} athlete{attentionAthletes.length > 1 ? 's' : ''} need attention today
             </span>
-            <span className="alert-chevron">{alertOpen ? '▴' : '▾'}</span>
+            <span className="alert-chevron" aria-hidden="true">{alertOpen ? '▴' : '▾'}</span>
           </button>
+
           {alertOpen && (
             <div className="alert-details">
               {attentionAthletes.map(a => (
-                <button key={a.id} className="alert-item" onClick={() => navigate(`/athletes/${a.id}`)}>
+                <button
+                  key={a.id}
+                  className="alert-item"
+                  onClick={() => navigate(`/athletes/${a.id}`)}
+                >
                   <span className="alert-item-name">{a.name}</span>
-                  <span className="alert-item-info">Readiness {a.readiness_score} · {a.position}</span>
+                  <span className="alert-item-info">
+                    Readiness {a.readiness_score} · {a.position}
+                  </span>
                 </button>
               ))}
             </div>
           )}
         </div>
       )}
+
+      {/* Filters */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">
           {activeTeam.name}
           <span className="dashboard-count">{athletes.length}</span>
         </h1>
-        <div className="filter-tabs">
+        <div className="filter-tabs" role="tablist" aria-label="Filter athletes">
           {([
             ['all', `All (${athletes.length})`],
             ['attention', `Needs Attention (${attentionAthletes.length})`],
             ['good', `Good (${athletes.length - attentionAthletes.length})`],
           ] as [Filter, string][]).map(([key, label]) => (
-            <button key={key}
+            <button
+              key={key}
               className={`filter-tab ${filter === key ? 'filter-tab--active' : ''}`}
-              onClick={() => setFilter(key)}>
+              onClick={() => setFilter(key)}
+              role="tab"
+              aria-selected={filter === key}
+            >
               {label}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Card grid */}
       <div className="athlete-grid">
         {filtered.map(athlete => (
-          <AthleteCard key={athlete.id} athlete={athlete}
-            onClick={() => navigate(`/athletes/${athlete.id}`)} />
+          <AthleteCard
+            key={athlete.id}
+            athlete={athlete}
+            onClick={() => navigate(`/athletes/${athlete.id}`)}
+          />
         ))}
       </div>
     </div>

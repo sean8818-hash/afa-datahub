@@ -1,0 +1,45 @@
+.benchmark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.benchmark-track {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.benchmark--sm .benchmark-track { gap: 2px; }
+
+.benchmark-seg {
+  flex: 1;
+  border-radius: 3px;
+  opacity: 0.18;
+  transition: opacity var(--t-base);
+}
+
+.benchmark--md .benchmark-seg { height: 5px; }
+.benchmark--sm .benchmark-seg { height: 3px; }
+
+.benchmark-seg--active { opacity: 1; }
+
+.benchmark-seg--weak      { background: var(--bench-weak); }
+.benchmark-seg--fair      { background: var(--bench-fair); }
+.benchmark-seg--average   { background: var(--bench-average); }
+.benchmark-seg--good      { background: var(--bench-good); }
+.benchmark-seg--excellent { background: var(--bench-excellent); }
+
+.benchmark-label {
+  font-size: 11px;
+  font-weight: 500;
+  min-width: 54px;
+  text-align: right;
+  letter-spacing: 0.3px;
+}
+
+.benchmark-label--weak      { color: var(--bench-weak); }
+.benchmark-label--fair      { color: var(--bench-fair); }
+.benchmark-label--average   { color: var(--bench-average); }
+.benchmark-label--good      { color: var(--bench-good); }
+.benchmark-label--excellent { color: var(--bench-excellent); }
