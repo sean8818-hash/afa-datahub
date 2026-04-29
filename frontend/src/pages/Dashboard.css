@@ -132,6 +132,14 @@
   gap: 12px;
 }
 
+.dashboard-empty {
+  border: 1px dashed var(--border-md);
+  border-radius: var(--r-md);
+  padding: 16px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .athlete-card {
   position: relative;
   background: var(--bg-card);

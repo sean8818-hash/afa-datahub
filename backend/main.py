@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import athletes, teams, tests, readiness
+from routers import athletes, teams, tests, readiness, auth, performance
 
 app = FastAPI(title="AfaSense Data Hub API", version="1.0.0")
 
@@ -16,6 +16,8 @@ app.include_router(athletes.router, prefix="/api/athletes", tags=["Athletes"])
 app.include_router(teams.router,    prefix="/api/teams",    tags=["Teams"])
 app.include_router(tests.router,    prefix="/api/tests",    tags=["Tests"])
 app.include_router(readiness.router,prefix="/api/readiness",tags=["Readiness"])
+app.include_router(auth.router,     prefix="/api/auth",     tags=["Auth"])
+app.include_router(performance.router, prefix="/api/performance", tags=["Performance"])
 
 @app.get("/api/health")
 def health():

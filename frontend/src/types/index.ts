@@ -3,13 +3,15 @@ export type BenchmarkLevel = 'weak' | 'fair' | 'average' | 'good' | 'excellent';
 export interface Team {
   id: number;
   name: string;
-  sport: string;
+  sport?: string;
+  code?: string;
   athlete_count?: number;
 }
 
 export interface Athlete {
   id: number;
   name: string;
+  email?: string;
   team_id: number;
   position?: string;
   avatar_url?: string;
@@ -41,4 +43,16 @@ export interface NavItem {
   label: string;
   icon: string;
   path: string;
+}
+
+export interface PerformanceParam {
+  id: number;
+  test_id?: number;
+  test_name?: string;
+  tags?: string;
+  category?: string;
+  code: string;
+  shortname?: string;
+  format?: string;
+  unit?: string;
 }

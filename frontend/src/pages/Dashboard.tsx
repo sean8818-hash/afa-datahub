@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../hooks/useApp';
+import { useAuth } from '../hooks/useAuth';
 import { BenchmarkBar } from '../components/ui/BenchmarkBar';
 import { MOCK_ATHLETES } from '../lib/mockData';
 import type { Athlete } from '../types';
@@ -19,6 +20,22 @@ function daysSince(dateStr?: string) {
   if (days === 0) return 'Today';
   if (days === 1) return '1d ago';
   return `${days}d ago`;
+}
+
+function deriveProfileFromId(id: number) {
+  const score = 40 + (id * 13 % 56); // 40..95 deterministic pseudo profile
+  const benchmark = score >= 85 ? 'excellent'
+    : score >= 70 ? 'good'
+    : score >= 55 ? 'average'
+    : score >= 45 ? 'fair'
+    : 'weak';
+  return {
+    readiness_score: score,
+    readiness_level: benchmark,
+    benchmark_level: benchmark,
+    needs_attention: score < 55,
+    position: 'Athlete',
+  } as const;
 }
 
 function ReadinessRing({ score }: { score: number }) {
@@ -78,12 +95,72 @@ function AthleteCard({ athlete, onClick }: { athlete: Athlete; onClick: () => vo
 }
 
 export default function Dashboard() {
+  const { token } = useAuth();
   const { activeTeam } = useApp();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<Filter>('all');
   const [alertOpen, setAlertOpen] = useState(false);
+  const [athletes, setAthletes] = useState<Athlete[]>([]);
+  const [loadingAthletes, setLoadingAthletes] = useState(false);
+  const [athletesError, setAthletesError] = useState<string | null>(null);
+  const mockByName = useMemo(
+    () => new Map(MOCK_ATHLETES.map((m) => [m.name.toLowerCase(), m])),
+    []
+  );
 
-  const athletes = MOCK_ATHLETES.filter(a => a.team_id === activeTeam.id);
+  useEffect(() => {
+    if (!token || !activeTeam) {
+      setAthletes([]);
+      setAthletesError(null);
+      setLoadingAthletes(false);
+      return;
+    }
+    setLoadingAthletes(true);
+    setAthletesError(null);
+    fetch(`/api/teams/${activeTeam.id}/players`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to load athletes');
+        return (await res.json()) as Athlete[];
+      })
+      .then((rows) => {
+        const enriched = rows.map((row) => {
+          const fromMock = mockByName.get((row.name ?? '').toLowerCase());
+          if (fromMock) {
+            return {
+              ...row,
+              position: row.position ?? fromMock.position,
+              readiness_score: row.readiness_score ?? fromMock.readiness_score,
+              readiness_level: row.readiness_level ?? fromMock.readiness_level,
+              benchmark_level: row.benchmark_level ?? fromMock.benchmark_level,
+              last_test_date: row.last_test_date ?? fromMock.last_test_date,
+              needs_attention: row.needs_attention ?? fromMock.needs_attention,
+            };
+          }
+          const fallback = deriveProfileFromId(row.id);
+          return {
+            ...row,
+            ...fallback,
+            position: row.position ?? fallback.position,
+          };
+        });
+        setAthletes(enriched);
+      })
+      .catch((err) => setAthletesError(err instanceof Error ? err.message : 'Failed to load athletes'))
+      .finally(() => setLoadingAthletes(false));
+  }, [token, activeTeam, mockByName]);
+
+  if (!activeTeam) {
+    return (
+      <div className="dashboard">
+        <div className="dashboard-header">
+          <h1 className="dashboard-title">No team available</h1>
+        </div>
+      </div>
+    );
+  }
+
   const attentionAthletes = athletes.filter(a => a.needs_attention);
   const filtered = filter === 'all' ? athletes
     : filter === 'attention' ? athletes.filter(a => a.needs_attention)
@@ -134,6 +211,11 @@ export default function Dashboard() {
       </div>
 
       <div className="athlete-grid">
+        {loadingAthletes && <div className="dashboard-empty">Loading athletes...</div>}
+        {athletesError && <div className="dashboard-empty">{athletesError}</div>}
+        {!loadingAthletes && !athletesError && filtered.length === 0 && (
+          <div className="dashboard-empty">No athletes in this team yet.</div>
+        )}
         {filtered.map(athlete => (
           <AthleteCard key={athlete.id} athlete={athlete}
             onClick={() => navigate(`/athletes/${athlete.id}`)} />

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../hooks/useApp';
+import { useAuth } from '../../hooks/useAuth';
 import type { Team } from '../../types';
 import './Topbar.css';
 
 export function Topbar() {
-  const { teams, activeTeam, setActiveTeam } = useApp();
+  const { teams, teamsLoading, activeTeam, setActiveTeam } = useApp();
+  const { admin, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +25,11 @@ export function Topbar() {
     setOpen(false);
   }
 
+  const displayName = admin?.name || admin?.email || 'Coach';
+  const avatarText = displayName.charAt(0).toUpperCase();
+  const teamTitle = activeTeam?.name ?? (teamsLoading ? 'Loading teams...' : 'No team');
+  const teamSubtitle = activeTeam?.sport ?? '';
+
   return (
     <header className="topbar">
       {/* Team switcher */}
@@ -31,19 +38,19 @@ export function Topbar() {
           className="team-trigger"
           onClick={() => setOpen(o => !o)}
           aria-haspopup="listbox"
-          aria-expanded={open}
+          disabled={!activeTeam || teams.length === 0}
         >
           <span className="team-avatar" aria-hidden="true">
-            {activeTeam.name.charAt(0)}
+            {teamTitle.charAt(0).toUpperCase()}
           </span>
           <span className="team-info">
-            <span className="team-name">{activeTeam.name}</span>
-            <span className="team-sport">{activeTeam.sport}</span>
+            <span className="team-name">{teamTitle}</span>
+            <span className="team-sport">{teamSubtitle}</span>
           </span>
           <span className="team-chevron" aria-hidden="true">{open ? '▴' : '▾'}</span>
         </button>
 
-        {open && (
+        {open && activeTeam && (
           <div className="team-dropdown" role="listbox" aria-label="Select team">
             {teams.map(team => (
               <button
@@ -51,7 +58,6 @@ export function Topbar() {
                 className={`team-option ${team.id === activeTeam.id ? 'team-option--active' : ''}`}
                 onClick={() => selectTeam(team)}
                 role="option"
-                aria-selected={team.id === activeTeam.id}
               >
                 <span className="team-option-avatar">{team.name.charAt(0)}</span>
                 <span className="team-option-info">
@@ -75,7 +81,9 @@ export function Topbar() {
         <button className="topbar-btn" aria-label="Notifications">
           <span aria-hidden="true">🔔</span>
         </button>
-        <div className="topbar-avatar" aria-label="User profile">C</div>
+        <button className="topbar-avatar" aria-label="Sign out" title={`Sign out (${displayName})`} onClick={logout}>
+          {avatarText}
+        </button>
       </div>
     </header>
   );
