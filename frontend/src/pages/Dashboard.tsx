@@ -180,7 +180,11 @@ export default function Dashboard() {
           {alertOpen && (
             <div className="alert-details">
               {attentionAthletes.map(a => (
-                <button key={a.id} className="alert-item" onClick={() => navigate(`/athletes/${a.id}`)}>
+                <button
+                  key={a.id}
+                  className="alert-item"
+                  onClick={() => navigate(`/athletes/${a.id}`, { state: { athlete: a } })}
+                >
                   <span className="alert-item-name">{a.name}</span>
                   <span className="alert-item-info">Readiness {a.readiness_score} · {a.position}</span>
                 </button>
@@ -218,7 +222,7 @@ export default function Dashboard() {
         )}
         {filtered.map(athlete => (
           <AthleteCard key={athlete.id} athlete={athlete}
-            onClick={() => navigate(`/athletes/${athlete.id}`)} />
+            onClick={() => navigate(`/athletes/${athlete.id}`, { state: { athlete } })} />
         ))}
       </div>
     </div>
