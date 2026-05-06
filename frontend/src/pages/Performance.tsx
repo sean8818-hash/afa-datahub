@@ -4,6 +4,37 @@ import { useAuth } from '../hooks/useAuth';
 import type { Athlete, PerformanceParam } from '../types';
 import './Performance.css';
 
+const CAT_COLORS = [
+  { bg: 'rgba(0,229,114,0.18)',  line: '#00e572', text: '#00e572' },
+  { bg: 'rgba(0,188,212,0.18)',  line: '#00bcd4', text: '#4dd6e8' },
+  { bg: 'rgba(255,152,0,0.18)',  line: '#ff9800', text: '#ffb74d' },
+  { bg: 'rgba(156,39,176,0.18)', line: '#ab47bc', text: '#ce93d8' },
+  { bg: 'rgba(239,83,80,0.18)',  line: '#ef5350', text: '#ef9a9a' },
+  { bg: 'rgba(255,214,0,0.18)',  line: '#ffd600', text: '#ffe57f' },
+];
+
+function IconPerson() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="8" cy="5.5" r="2.5"/>
+      <path d="M2.5 14.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/>
+    </svg>
+  );
+}
+
+function IconSliders() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <line x1="2" y1="5" x2="8.2" y2="5"/>
+      <line x1="11.8" y1="5" x2="14" y2="5"/>
+      <circle cx="10" cy="5" r="1.8" fill="currentColor" stroke="none"/>
+      <line x1="2" y1="11" x2="6.2" y2="11"/>
+      <line x1="9.8" y1="11" x2="14" y2="11"/>
+      <circle cx="8" cy="11" r="1.8" fill="currentColor" stroke="none"/>
+    </svg>
+  );
+}
+
 interface TestsResponse {
   athlete_id: number;
   tests: Array<{
@@ -452,17 +483,23 @@ export default function PerformancePage() {
           <h1>Performance</h1>
           <p>Select team, player, and parameters to load test results.</p>
         </div>
-        <input
-          className="perf-input perf-header-search"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search category / test / parameter / code..."
-        />
+        <div className="perf-search-wrap">
+          <svg className="perf-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="6.5" cy="6.5" r="4"/>
+            <line x1="10" y1="10" x2="14" y2="14"/>
+          </svg>
+          <input
+            className="perf-input perf-header-search"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Search category / test / param..."
+          />
+        </div>
       </div>
 
       <div className="perf-filters">
         <div className="perf-card">
-          <span className="perf-label">Player</span>
+          <span className="perf-label"><IconPerson />Player</span>
           <div className="perf-player-dropdown" ref={playerDropdownRef}>
             <button
               type="button"
@@ -503,16 +540,26 @@ export default function PerformancePage() {
                       </button>
                     </div>
                     <div className="perf-player-list">
-                      {players.map((p) => (
-                        <label className="perf-player-item" key={p.id}>
-                          <input
-                            type="checkbox"
-                            checked={selectedPlayerIds.includes(p.id)}
-                            onChange={() => togglePlayer(p.id)}
-                          />
-                          <span>{p.name ?? p.email ?? `Player ${p.id}`}</span>
-                        </label>
-                      ))}
+                      {players.map((p) => {
+                        const src = p.name ?? p.email ?? '';
+                        const words = src.split(/[\s.@_-]+/).filter(Boolean);
+                        const initials = words.length === 0
+                          ? `P${p.id}`
+                          : words.length === 1
+                          ? words[0].slice(0, 2).toUpperCase()
+                          : (words[0][0] + words[1][0]).toUpperCase();
+                        return (
+                          <label className="perf-player-item" key={p.id}>
+                            <input
+                              type="checkbox"
+                              checked={selectedPlayerIds.includes(p.id)}
+                              onChange={() => togglePlayer(p.id)}
+                            />
+                            <span className="perf-player-avatar">{initials}</span>
+                            <span>{p.name ?? p.email ?? `Player ${p.id}`}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </>
                 )}
@@ -522,7 +569,7 @@ export default function PerformancePage() {
           <span className="perf-select-hint">Click to select multiple players.</span>
         </div>
         <div className="perf-card perf-card--grow">
-          <span className="perf-label">Parameter Filters</span>
+          <span className="perf-label"><IconSliders />Parameter Filters</span>
           <div className="perf-filter-grid">
             <select
               className="perf-select"
@@ -596,6 +643,27 @@ export default function PerformancePage() {
                     {parameterDropdownOptions.length === 0 && (
                       <div className="perf-empty">No parameters found.</div>
                     )}
+                    {parameterDropdownOptions.length > 0 && (
+                      <label className="perf-param-item perf-param-item--all">
+                        <input
+                          type="checkbox"
+                          checked={selectedParamCodes.length === parameterDropdownOptions.length}
+                          ref={(el) => {
+                            if (el) el.indeterminate =
+                              selectedParamCodes.length > 0 &&
+                              selectedParamCodes.length < parameterDropdownOptions.length;
+                          }}
+                          onChange={() => {
+                            if (selectedParamCodes.length === parameterDropdownOptions.length) {
+                              setSelectedParamCodes([]);
+                            } else {
+                              setSelectedParamCodes(parameterDropdownOptions.map((p) => p.code));
+                            }
+                          }}
+                        />
+                        <span>All Parameters</span>
+                      </label>
+                    )}
                     {parameterDropdownOptions.map((opt) => (
                       <label key={opt.code} className="perf-param-item">
                         <input
@@ -613,7 +681,9 @@ export default function PerformancePage() {
           </div>
         </div>
         <button className="perf-load-btn" onClick={loadPerformance} disabled={selectedPlayerIds.length === 0 || loadingData}>
-          {loadingData ? 'Loading...' : 'Load Performance'}
+          {loadingData ? (
+            <><span className="perf-spinner" aria-hidden="true" /> Loading</>
+          ) : 'Load'}
         </button>
       </div>
 
@@ -645,6 +715,16 @@ export default function PerformancePage() {
           {result && displayedTests.length === 0 && confirmedCodes.length > 0 && (
             <div className="perf-empty">当前筛选暂无数据，表格已保留空位可继续测试。</div>
           )}
+          {selectedColumns.length > 0 && (
+            <div className="perf-param-legend">
+              {selectedColumns.map((col) => (
+                <span key={col.code} className="perf-legend-item">
+                  <span className="perf-legend-code">{col.code}</span>
+                  <span className="perf-legend-short">{col.shortName}</span>
+                </span>
+              ))}
+            </div>
+          )}
           {canRenderMatrix && (
             <div
               className={`perf-table-wrap ${isDraggingTable ? 'perf-table-wrap--dragging' : ''}`}
@@ -666,11 +746,20 @@ export default function PerformancePage() {
                     <>
                       <tr>
                         <th rowSpan={3}>Player</th>
-                        {categoryGroups.map((g, idx) => (
-                          <th key={`${g.category}-${idx}`} colSpan={g.span} title={g.category}>
-                            <span className="perf-cell-truncate">{trimToWords(g.category)}</span>
-                          </th>
-                        ))}
+                        {categoryGroups.map((g, idx) => {
+                          const c = CAT_COLORS[idx % CAT_COLORS.length];
+                          return (
+                            <th
+                              key={`${g.category}-${idx}`}
+                              colSpan={g.span}
+                              title={g.category}
+                              className="perf-cat-th"
+                              style={{ background: c.bg, borderBottom: `2px solid ${c.line}`, color: c.text }}
+                            >
+                              <span className="perf-cell-truncate">{trimToWords(g.category)}</span>
+                            </th>
+                          );
+                        })}
                       </tr>
                       <tr>
                         {selectedColumns.map((col) => (

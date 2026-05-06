@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,43 +8,52 @@
 
 :root {
   /* Brand */
-  --green:        #22c55e;
-  --green-dim:    #16a34a;
-  --green-glow:   rgba(34, 197, 94, 0.12);
-  --green-border: rgba(34, 197, 94, 0.25);
+  --green:        #00e572;
+  --green-dim:    #00b359;
+  --green-glow:   rgba(0, 229, 114, 0.13);
+  --green-border: rgba(0, 229, 114, 0.28);
+
+  /* Category palette */
+  --cat-0-bg: rgba(0, 229, 114, 0.18);   --cat-0-line: #00e572;  --cat-0-text: #00e572;
+  --cat-1-bg: rgba(0, 188, 212, 0.18);   --cat-1-line: #00bcd4;  --cat-1-text: #4dd6e8;
+  --cat-2-bg: rgba(255, 152, 0, 0.18);   --cat-2-line: #ff9800;  --cat-2-text: #ffb74d;
+  --cat-3-bg: rgba(156, 39, 176, 0.18);  --cat-3-line: #ab47bc;  --cat-3-text: #ce93d8;
+  --cat-4-bg: rgba(239, 83, 80, 0.18);   --cat-4-line: #ef5350;  --cat-4-text: #ef9a9a;
+  --cat-5-bg: rgba(255, 214, 0, 0.18);   --cat-5-line: #ffd600;  --cat-5-text: #ffe57f;
 
   /* Backgrounds */
-  --bg-base:      #0a0f0d;
-  --bg-surface:   #111713;
-  --bg-card:      #161d18;
-  --bg-hover:     #1c2620;
-  --bg-active:    #1f2d23;
+  --bg-base:      #080d0b;
+  --bg-surface:   #0f1511;
+  --bg-card:      #141a16;
+  --bg-hover:     #1a2420;
+  --bg-active:    #1e2c22;
 
   /* Borders */
   --border:       rgba(255,255,255,0.07);
   --border-md:    rgba(255,255,255,0.11);
-  --border-green: rgba(34, 197, 94, 0.3);
+  --border-green: rgba(0, 229, 114, 0.3);
 
   /* Text */
   --text-primary:   #e8f0ea;
   --text-secondary: #b8ccba;
   --text-muted:     #8aa88d;
-  --text-green:     #22c55e;
+  --text-green:     #00e572;
 
   /* Benchmark colors */
   --bench-weak:      #ef4444;
   --bench-fair:      #f97316;
   --bench-average:   #eab308;
-  --bench-good:      #22c55e;
-  --bench-excellent: #059669;
+  --bench-good:      #00e572;
+  --bench-excellent: #00b359;
 
   /* Sidebar */
   --sidebar-w: 220px;
   --topbar-h:  56px;
 
   /* Typography */
-  --font-sans: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-sans:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --font-display: 'Barlow Condensed', 'DM Sans', sans-serif;
 
   /* Radius */
   --r-sm: 6px;

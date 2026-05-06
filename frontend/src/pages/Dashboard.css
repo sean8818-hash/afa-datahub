@@ -82,13 +82,15 @@
 }
 
 .dashboard-title {
-  font-size: 20px;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
 }
 
 .dashboard-count {
@@ -142,23 +144,47 @@
 
 .athlete-card {
   position: relative;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 16px;
   cursor: pointer;
   text-align: left;
-  transition: border-color var(--t-base), background var(--t-base), transform var(--t-base);
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--bg-card), var(--bg-card)),
+    linear-gradient(145deg, rgba(0,229,114,0.28) 0%, rgba(0,188,212,0.10) 55%, rgba(255,255,255,0.03) 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  transition: box-shadow var(--t-base), background-image var(--t-base);
+}
+
+.athlete-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 16px; right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,114,0.55), transparent);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity var(--t-base);
+  pointer-events: none;
 }
 
 .athlete-card:hover {
-  border-color: var(--border-md);
-  background: var(--bg-hover);
-  transform: translateY(-1px);
+  background-image:
+    linear-gradient(var(--bg-hover), var(--bg-hover)),
+    linear-gradient(145deg, rgba(0,229,114,0.90) 0%, rgba(0,188,212,0.55) 50%, rgba(0,229,114,0.22) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 114, 0.50),
+    0 0 22px rgba(0, 229, 114, 0.14),
+    0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.athlete-card:hover::after {
+  opacity: 1;
 }
 
 .card-alert-dot {
@@ -179,14 +205,20 @@
 
 .card-avatar {
   width: 38px; height: 38px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-md);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
+  background: linear-gradient(135deg, rgba(0,229,114,0.15), rgba(0,188,212,0.08));
+  border: 1px solid rgba(0,229,114,0.28);
+  color: var(--green);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   border-radius: 10px;
   flex-shrink: 0;
+  transition: box-shadow var(--t-base);
+}
+
+.athlete-card:hover .card-avatar {
+  box-shadow: 0 0 12px rgba(0, 229, 114, 0.35);
 }
 
 .card-identity {
@@ -198,12 +230,15 @@
 }
 
 .card-name {
-  font-size: 13.5px;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
 }
 
 .card-position { font-size: 11.5px; color: var(--text-muted); }
