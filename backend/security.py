@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -36,7 +36,7 @@ def decode_access_token(token: str) -> Dict[str, Any]:
 
 
 def get_current_admin(
-    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer_scheme),
 ) -> Dict[str, Any]:
     if not credentials:
         raise HTTPException(

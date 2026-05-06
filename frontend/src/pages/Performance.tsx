@@ -462,10 +462,6 @@ export default function PerformancePage() {
 
       <div className="perf-filters">
         <div className="perf-card">
-          <span className="perf-label">Team</span>
-          <div className="perf-value">{activeTeam?.name ?? 'No team available'}</div>
-        </div>
-        <div className="perf-card">
           <span className="perf-label">Player</span>
           <div className="perf-player-dropdown" ref={playerDropdownRef}>
             <button

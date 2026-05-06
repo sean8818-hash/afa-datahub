@@ -39,7 +39,7 @@
 
 .perf-filters {
   display: grid;
-  grid-template-columns: 220px 220px minmax(0, 760px) auto;
+  grid-template-columns: 220px minmax(0, 760px) auto;
   gap: 10px;
   background: linear-gradient(180deg, rgba(13, 30, 24, 0.74), rgba(9, 22, 18, 0.72));
   border: 1px solid rgba(52, 90, 72, 0.46);
@@ -161,7 +161,7 @@
 }
 
 .perf-params-menu-list {
-  max-height: 180px;
+  max-height: 360px;
   overflow: auto;
   display: flex;
   flex-direction: column;

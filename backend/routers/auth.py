@@ -1,7 +1,7 @@
 import hashlib
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -29,7 +29,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
-def _find_row(cur, email: str) -> Dict[str, Any] | None:
+def _find_row(cur, email: str) -> Optional[Dict[str, Any]]:
     for table in LOGIN_TABLES:
         for column in EMAIL_COLUMNS:
             try:
@@ -48,7 +48,7 @@ def _find_row(cur, email: str) -> Dict[str, Any] | None:
     return None
 
 
-def _pick_value(row: Dict[str, Any], columns: tuple[str, ...], fallback: Any = None) -> Any:
+def _pick_value(row: Dict[str, Any], columns: Tuple[str, ...], fallback: Any = None) -> Any:
     for key in columns:
         value = row.get(key)
         if value is not None and value != "":
@@ -121,7 +121,7 @@ def _extract_admin_info(legacy_payload: Dict[str, Any], fallback_email: str) -> 
     }
 
 
-def _login_via_legacy_70067(email: str, password: str) -> Dict[str, Any] | None:
+def _login_via_legacy_70067(email: str, password: str) -> Optional[Dict[str, Any]]:
     if not LEGACY_LOGIN_URL:
         return None
 
@@ -189,6 +189,28 @@ def login(payload: LoginRequest):
     except (RequestException, ValueError):
         # If remote legacy login is not reachable, fallback to local DB validation.
         pass
+
+    # If legacy login succeeded but returned id=0, look up the real id from local DB by email.
+    if auth_source == "legacy_70067" and (not admin_id or admin_id == 0):
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                for tbl in ("tp_mirror_users", "mirror_users"):
+                    for col in ("email", "account"):
+                        try:
+                            cur.execute(
+                                f"SELECT id, name FROM {tbl} WHERE {col} = %s LIMIT 1",
+                                (email,),
+                            )
+                            row = cur.fetchone()
+                            if row:
+                                admin_id = row["id"]
+                                if not admin_name or admin_name == email:
+                                    admin_name = row.get("name") or email
+                                break
+                        except Exception:
+                            continue
+                    if admin_id:
+                        break
 
     if auth_source == "db_fallback":
         with get_db() as conn:

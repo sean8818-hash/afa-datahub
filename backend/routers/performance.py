@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, Query
 
@@ -24,8 +24,8 @@ def _run_first_success(cur, attempts: Iterable[tuple[str, tuple[Any, ...]]]):
 
 @router.get("/params")
 def get_performance_params(
-    category: str | None = Query(None),
-    keyword: str | None = Query(None),
+    category: Optional[str] = Query(None),
+    keyword: Optional[str] = Query(None),
     limit: int = Query(300, ge=1, le=1000),
     _: Dict[str, Any] = Depends(get_current_admin),
 ):
